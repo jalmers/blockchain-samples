@@ -1,4 +1,4 @@
-Note: These steps are only provided in case there are challenges with the Bluemix environment or if you are making code changes and want to quickly test in the local environemnt. The recommended approach is to use the IoT Platoform and Monitoring UI to run the contract
+Note: These steps are only provided in case there are challenges with the Bluemix environment or if you are making code changes and want to quickly test in the local environemnt. The recommended approach is to use the IoT Platform and Monitoring UI to run the contract
 
 
 1. Copy the simple_contract_hyperledger folder to the Examples folder in your Sandbox hyperledger fabric.
@@ -37,7 +37,7 @@ A new call to 'read' should give you the updated asset record.
 delete:
 ./peer chaincode invoke -l golang -n simhyp -c '{"Function":"deleteAsset" , "Args":["{\"assetID\":\"CON123\"}"]}' 
 
-
+For Real-life logistics use cases, deleting asset data from the blockchain is not generally recommended. Since this is a simple crud example contract, delete is provided for completion
 
 
 
