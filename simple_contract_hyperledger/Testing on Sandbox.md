@@ -1,4 +1,4 @@
-Note: These steps are only provided in case there are challenges with the Bluemix environment or if you are making code changes and want to quickly test in the local environemnt. The recommended approach is to use the IoT Platform and Monitoring UI to run the contract
+Note: These steps are only provided in case there are challenges with the Bluemix environment or if you are making code changes and want to quickly test in the local environment. The recommended approach is to use the IoT Platform and Monitoring UI to run the contract use case end-to-end.
 
 
 1. Copy the simple_contract_hyperledger folder to the Examples folder in your Sandbox hyperledger fabric.
