@@ -7,7 +7,7 @@ Note: These steps are only provided in case there are challenges with the Bluemi
 
 3. go build in the simple_contract_hyperledger folder
 
-4. In the peer folder, build the peer, then start peer: ./peer node --peer-chaincodedev (sandbox instructions may change with hyperledger version, please check https://github.com/hyperledger/fabric/blob/master/docs/API/SandboxSetup.md )
+4. In the peer folder, build the peer, then start peer: ./peer node start --peer-chaincodedev (sandbox instructions may change with hyperledger version, please check https://github.com/hyperledger/fabric/blob/master/docs/API/SandboxSetup.md )
 
 5. Register to the shim in the sandbox, inside the contract folder: CORE_CHAINCODE_ID_NAME=simhyp CORE_PEER_ADDRESS=0.0.0.0:30303 ./simple_contract_hyperledger
 
