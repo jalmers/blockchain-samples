@@ -101,15 +101,15 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 // ************************************
 func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
     // Handle different functions
-    if function == "createAsset" {
+    if function == "notCreateAsset" {
         // create assetID
-        return t.createAsset(stub, args)
-    } else if function == "updateAsset" {
+        return t.notCreateAsset(stub, args)
+    } else if function == "notUpdateAsset" {
         // create assetID
-        return t.updateAsset(stub, args)
-    } else if function == "deleteAsset" {
+        return t.notUpdateAsset(stub, args)
+    } else if function == "notDeleteAsset" {
         // Deletes an asset by ID from the ledger
-        return t.deleteAsset(stub, args)
+        return t.notDeleteAsset(stub, args)
     }
     return nil, errors.New("Received unknown invocation: " + function)
 }
@@ -119,17 +119,17 @@ func (t *SimpleChaincode) Invoke(stub *shim.ChaincodeStub, function string, args
 // ************************************
 func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
     // Handle different functions
-    if function == "readAsset" {
+    if function == "notReadAsset" {
         // gets the state for an assetID as a JSON struct
-        return t.readAsset(stub, args)
-    } else if function =="readAssetObjectModel" {
-        return t.readAssetObjectModel(stub, args)
-    }  else if function == "readAssetSamples" {
+        return t.notReadAsset(stub, args)
+    } else if function =="notReadAssetObjectModel" {
+        return t.notReadAssetObjectModel(stub, args)
+    }  else if function == "notReadAssetSamples" {
 		// returns selected sample objects 
-		return t.readAssetSamples(stub, args)
-	} else if function == "readAssetSchemas" {
+		return t.notReadAssetSamples(stub, args)
+	} else if function == "notReadAssetSchemas" {
 		// returns selected sample objects 
-		return t.readAssetSchemas(stub, args)
+		return t.notReadAssetSchemas(stub, args)
 	}
     return nil, errors.New("Received unknown invocation: " + function)
 }
@@ -149,14 +149,14 @@ func main() {
 
 /******************** createAsset ********************/
 
-func (t *SimpleChaincode) createAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notCreateAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
     _,erval:=t. createOrUpdateAsset(stub, args)
     return nil, erval
 }
 
 //******************** updateAsset ********************/
 
-func (t *SimpleChaincode) updateAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notUpdateAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
      _,erval:=t. createOrUpdateAsset(stub, args)
     return nil, erval
 }
@@ -164,7 +164,7 @@ func (t *SimpleChaincode) updateAsset(stub *shim.ChaincodeStub, args []string) (
 
 //******************** deleteAsset ********************/
 
-func (t *SimpleChaincode) deleteAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notDeleteAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
     var assetID string // asset ID
     var err error
     var stateIn AssetState
@@ -188,7 +188,7 @@ func (t *SimpleChaincode) deleteAsset(stub *shim.ChaincodeStub, args []string) (
 
 //********************readAsset********************/
 
-func (t *SimpleChaincode) readAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notReadAsset(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
     var assetID string // asset ID
     var err error
     var state AssetState
@@ -215,7 +215,7 @@ func (t *SimpleChaincode) readAsset(stub *shim.ChaincodeStub, args []string) ([]
 
 //*************readAssetObjectModel*****************/
 
-func (t *SimpleChaincode) readAssetObjectModel(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notReadAssetObjectModel(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
     var state AssetState = AssetState{}
 
     // Marshal and return
@@ -227,12 +227,12 @@ func (t *SimpleChaincode) readAssetObjectModel(stub *shim.ChaincodeStub, args []
 }
 //*************readAssetSamples*******************/
 
-func (t *SimpleChaincode) readAssetSamples(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notReadAssetSamples(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	return []byte(samples), nil
 }
 //*************readAssetSchemas*******************/
 
-func (t *SimpleChaincode) readAssetSchemas(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+func (t *SimpleChaincode) notReadAssetSchemas(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	return []byte(schemas), nil
 }
 
@@ -250,6 +250,7 @@ func (t *SimpleChaincode) validateInput(args []string) (stateIn AssetState, err 
     jsonData:=args[0]
     assetID = ""
     stateJSON := []byte(jsonData)
+    fmt.Println("Input data ",jsonData)
     err = json.Unmarshal(stateJSON, &stateIn)
     if err != nil {
         err = errors.New("Unable to unmarshal input JSON data")
@@ -262,6 +263,7 @@ func (t *SimpleChaincode) validateInput(args []string) (stateIn AssetState, err 
     
     if stateIn.AssetID !=nil { 
         assetID = strings.TrimSpace(*stateIn.AssetID)
+         fmt.Println("assetID ",assetID)
         if assetID==""{
             err = errors.New("AssetID not passed")
             return state, err
@@ -269,8 +271,11 @@ func (t *SimpleChaincode) validateInput(args []string) (stateIn AssetState, err 
     } else {
         err = errors.New("Asset id is mandatory in the input JSON data")
         return state, err
-    }  
+    }
+    
+    
     stateIn.AssetID = &assetID
+     fmt.Println("assetID after val ",*stateIn.AssetID)
     return stateIn, nil
 }
 //******************** createOrUpdateAsset ********************/
@@ -288,13 +293,16 @@ func (t *SimpleChaincode) createOrUpdateAsset(stub *shim.ChaincodeStub, args []s
     if err != nil {
         return nil, err
     }
+    fmt.Println("after validate input ")
     assetID = *stateIn.AssetID
     // Partial updates introduced here
     // Check if asset record existed in stub
     assetBytes, err:= stub.GetState(assetID)
+    fmt.Println ("error is ", err)
     if err != nil || len(assetBytes)==0{
         // This implies that this is a 'create' scenario
          stateStub = stateIn // The record that goes into the stub is the one that cme in
+         fmt.Println("assetBytes ", *stateStub.AssetID)
     } else {
         // This is an update scenario
         err = json.Unmarshal(assetBytes, &stateStub)
@@ -304,11 +312,11 @@ func (t *SimpleChaincode) createOrUpdateAsset(stub *shim.ChaincodeStub, args []s
             // state is an empty instance of asset state
         }
           // Merge partial state updates
-        err :=t.mergePartialState(&stateStub,&stateIn)
-		if err !=nil {
+        stateStub, err =t.mergePartialState(stateStub,stateIn)
+        if err != nil {
             err = errors.New("Unable to merge state")
             return nil,err
-		}
+        }
     }
     stateJSON, err := json.Marshal(stateStub)
     if err != nil {
@@ -326,29 +334,18 @@ func (t *SimpleChaincode) createOrUpdateAsset(stub *shim.ChaincodeStub, args []s
     return nil, nil
 }
 /*********************************  internal: mergePartialState ****************************/	
- func (t *SimpleChaincode) mergePartialState(oldState interface{}, newState interface{}) (error) {
-    return t.mergeState(reflect.ValueOf(oldState), reflect.ValueOf(newState) )
- }
- 
- func (t *SimpleChaincode) mergeState(v1 reflect.Value, v2 reflect.Value) (error) { 
-	if v1.Kind() != reflect.Ptr || v2.Kind() != reflect.Ptr{
-		return errors.New("Not a pointer value")
+ func (t *SimpleChaincode) mergePartialState(oldState AssetState, newState AssetState) (AssetState,  error) {
+     
+    old := reflect.ValueOf(&oldState).Elem()
+    new := reflect.ValueOf(&newState).Elem()
+    for i := 0; i < old.NumField(); i++ {
+        oldOne:=old.Field(i)
+        newOne:=new.Field(i)
+        if ! reflect.ValueOf(newOne.Interface()).IsNil() {
+            oldOne.Set(reflect.Value(newOne))
+        } //else {
+         //   fmt.Println("Old is ",oldOne.Interface())
+        //}
     }
-	v1Val:=reflect.Indirect(v1)
-	v2Val:=reflect.Indirect(v2)
-	if reflect.ValueOf(v1.Interface()).IsNil() || v2Val.Kind() != reflect.Struct{
-		if v2.Interface() !=nil {
-			if ! reflect.ValueOf(v2.Interface()).IsNil() {
-					v1.Set(reflect.Value(v2))
-			}
-		}
-	} else {
-		for i := 0; i < v2Val.NumField(); i++ {
-			err := t.mergeState(v1Val.Field(i), v2Val.Field(i))
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil	
+    return oldState, nil
  }
