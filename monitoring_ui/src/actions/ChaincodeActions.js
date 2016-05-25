@@ -17,6 +17,8 @@ Contributors:
 Alex Nguyen - Initial Contribution
 *****************************************************************************/
 import equal from 'deep-equal';
+import {openSnackbar, hideSnackbar, setSnackbarMsg} from '../actions/AppActions';
+import * as strings from '../resources/strings'
 
 export const SET_CC_SCHEMA = "SET_CC_SCHEMA"
 export const setCcSchema = (schema) => {
@@ -202,8 +204,6 @@ export function sendObcRequest(args, fn, requestType){
 
   return function(dispatch, getState){
     let state = getState();
-
-    console.log(args);
     //iterate through the args and delete any empty strings
 
     for(var propertyName in args){
@@ -215,19 +215,21 @@ export function sendObcRequest(args, fn, requestType){
     }
 
     let requestPayload = {
-      "chaincodeSpec":{
-        "type": "GOLANG",
-        "chaincodeID":{
-          "name":state.configuration.chaincodeId
-        },
-        "ctorMsg":{
-          "function":fn,
-          //we need to stringify the object because contract expects a string as args, not an object.
-          "args": args ? [JSON.stringify(args)] : []
-        },
-        "secureContext":state.configuration.secureContext,
-        "confidentialityLevel":"PUBLIC"
-      }
+      "jsonrpc": "2.0",
+      "method": requestType.toLowerCase(),
+      "params": {
+          "type": 1,
+          "chaincodeID":{
+              "name":state.configuration.chaincodeId
+          },
+          "ctorMsg":{
+            "function":fn,
+            //we need to stringify the object because contract expects a string as args, not an object.
+            "args": args ? [JSON.stringify(args)] : []
+          },
+          "secureContext":state.configuration.secureContext
+      },
+      "id": 5
     }
 
     let config = {
@@ -239,43 +241,39 @@ export function sendObcRequest(args, fn, requestType){
       body: JSON.stringify(requestPayload)
     }
 
-    console.log(config)
-
-    return fetch(state.configuration.urlRestRoot + '/devops/'+requestType.toLowerCase()+'/', config)
+    return fetch(state.configuration.urlRestRoot + '/chaincode/', config)
     .then(response => response.json())
     .then(json => {
-      console.log(json);
 
-      //TODO: Display error message and then do nothing
-      if(json.Error){
-        return;
-      }
+      if(json.error){
+        dispatch(setSnackbarMsg(json.error.data));
+        dispatch(openSnackbar());
+      }else{
+        let alreadyRequested = false;
+        let indexOfMatch = -1;
 
-      let alreadyRequested = false;
-      let indexOfMatch = -1;
+        //If this is a query type, then we should display the response payload on the UI.
+        if(requestType === QUERY){
+          //first we check if the response payload already exists. If it does, then we update. Otherwise, we add.
+          for(let i=0; i < state.chaincode.ui.responsePayloads.length; i++){
+            //we compare 3 properties to verify equality: args, fn and type.
+            let payload = state.chaincode.ui.responsePayloads[i];
 
-      //If this is a query type, then we should display the response payload on the UI.
-      if(requestType === QUERY){
-        //first we check if the response payload already exists. If it does, then we update. Otherwise, we add.
-        for(let i=0; i < state.chaincode.ui.responsePayloads.length; i++){
-          //we compare 3 properties to verify equality: args, fn and type.
-          let payload = state.chaincode.ui.responsePayloads[i];
+            if(equal(payload.args, args) && payload.fn === fn && payload.opType === requestType){
+              alreadyRequested = true;
+              indexOfMatch = i;
+              break;
+            }
+          }
 
-          if(equal(payload.args, args) && payload.fn === fn && payload.opType === requestType){
-            alreadyRequested = true;
-            indexOfMatch = i;
-            break;
+          //we found a match, which means we should be updating, not appending.
+          if(alreadyRequested){
+            dispatch(updateResponsePayload(indexOfMatch, JSON.parse(json.result.message)))
+          }else{
+            dispatch(addResponsePayload(args, fn, QUERY, JSON.parse(json.result.message), false, false))
           }
         }
-
-        //we found a match, which means we should be updating, not appending.
-        if(alreadyRequested){
-          dispatch(updateResponsePayload(indexOfMatch, json.OK))
-        }else{
-          dispatch(addResponsePayload(args, fn, QUERY, json.OK, false, false))
-        }
       }
-
     })
   }
 }
@@ -288,21 +286,22 @@ export function fetchCcSchema(){
   return function (dispatch, getState){
     let state = getState();
 
-    //create the payload to communicate with the obc-peer
     let queryRequestPayload = {
-      "chaincodeSpec":{
-        "type": "GOLANG",
-        "chaincodeID":{
-          "name":state.configuration.chaincodeId
-        },
-        "ctorMsg":{
-          "function":"readAssetSchemas",
-          //we need to stringify the object because contract expects a string as args, not an object.
-          "args":[]
-        },
-        "secureContext":state.configuration.secureContext,
-        "confidentialityLevel":"PUBLIC"
-      }
+      "jsonrpc": "2.0",
+      "method": "query",
+      "params": {
+          "type": 1,
+          "chaincodeID":{
+              "name":state.configuration.chaincodeId
+          },
+          "ctorMsg":{
+            "function":"readAssetSchemas",
+            //we need to stringify the object because contract expects a string as args, not an object.
+            "args": []
+          },
+          "secureContext":state.configuration.secureContext
+      },
+      "id": 5
     }
 
     let config = {
@@ -314,18 +313,31 @@ export function fetchCcSchema(){
       body: JSON.stringify(queryRequestPayload)
     }
 
-    return fetch(state.configuration.urlRestRoot + '/devops/query/', config)
+    return fetch(state.configuration.urlRestRoot + '/chaincode/', config)
     .then(response => response.json())
     .then(json => {
-      //update state to store the object model.
-      dispatch(setCcSchema(json.OK))
 
-      //then parse through the cc schema and create an object
-      let chaincodeOpsModel = createChaincodeOpsModel(json.OK, state.chaincode.ui.possibleTabs)
+      console.log(json);
 
-      //set the chaincode ops
-      //this is tied directly to the form model, so we use the react-redux-form actions.change function
-      dispatch(actions.change('chaincodeOpsForm', chaincodeOpsModel))
+      //if there is an error, display it
+      if(json.error){
+        dispatch(setSnackbarMsg(json.error.data));
+        dispatch(openSnackbar())
+
+        //update state to store the object model.
+        dispatch(setCcSchema({}))
+
+      }else{
+        //update state to store the object model.
+        dispatch(setCcSchema(JSON.parse(json.result.message)))
+
+        //then parse through the cc schema and create an object
+        let chaincodeOpsModel = createChaincodeOpsModel(JSON.parse(json.result.message), state.chaincode.ui.possibleTabs)
+
+        //set the chaincode ops
+        //this is tied directly to the form model, so we use the react-redux-form actions.change function
+        dispatch(actions.change('chaincodeOpsForm', chaincodeOpsModel))
+      }
     })
 
   }

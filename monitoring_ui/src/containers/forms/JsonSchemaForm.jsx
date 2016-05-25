@@ -26,7 +26,8 @@ import MenuItem from 'material-ui/lib/menus/menu-item';
 
 import { actions } from 'react-redux-form';
 
-import {sendObcRequest} from '../../actions/ChaincodeActions'
+import {sendObcRequest} from '../../actions/ChaincodeActions';
+import {openSnackbar, hideSnackbar, setSnackbarMsg} from '../../actions/AppActions';
 
 import Form from "react-jsonschema-form";
 import * as strings from '../../resources/strings'
@@ -61,11 +62,14 @@ class JsonSchemaForm extends React.Component {
     data.formData={};
 
     //dispatch the payload to the appropriate api endpoint
-    dispatch(sendObcRequest(args, this.props.fnName, this.props.currentRequestType))
+    dispatch(sendObcRequest(args, this.props.fnName, this.props.currentRequestType));
+
+    dispatch(setSnackbarMsg(strings.CHAINCODE_SNACKBAR_MSG_REQ_SENT))
+    //show the snackbar
+    dispatch(openSnackbar());
   }
 
   handleChange = (data) => {
-    console.log(data)
     //dispatch an action to change the form model specifically for the form under a particular tab.
     this.props.dispatch(actions.change('chaincodeOpsForm.'+this.props.currentTab+'.fns['+this.props.fnIndex+'].args',data.formData));
   }
@@ -89,6 +93,7 @@ class JsonSchemaForm extends React.Component {
         <div style={{textAlign: 'right'}}>
           <FlatButton type="submit" primary={true}>{strings.FORM_JSON_SCHEMA_SUBMIT_BTN_TEXT}</FlatButton>
         </div>
+
       </Form>
     );
   }
@@ -113,7 +118,7 @@ function mapStateToProps(state) {
   if(state.chaincodeOpsForm[currentTab]){
     fnIndex = state.chaincodeOpsForm[currentTab].selectedFn;
     fnName = state.chaincodeOpsForm[currentTab].fns[fnIndex].name;
-    selectedJsonSchema = state.chaincode.schema.API[fnName].properties.args.items;
+    selectedJsonSchema = state.chaincode.schema ? state.chaincode.schema.API[fnName].properties.args.items : null;
     //console.log(selectedJsonSchema);
   }
 

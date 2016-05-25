@@ -20,10 +20,11 @@ import { combineReducers } from 'redux'
 import {blockchain} from './BlockchainReducer.js'
 import {configuration} from './ConfigurationReducer.js'
 import {chaincode} from './ChaincodeReducer.js'
+import {app} from './AppReducer'
 
 import {
   modelReducer,
-  createFormReducer
+  formReducer
 } from 'react-redux-form';
 
 const initialConfigurationState = {
@@ -50,8 +51,10 @@ const rootReducer = combineReducers({
   //obcConfiguration is the model that deals with any configuration related to obc
   obcConfiguration: modelReducer('obcConfiguration', initialConfigurationState),
   chaincodeOpsForm: modelReducer('chaincodeOpsForm', initialChaincodeOpsFormState),
+  obcConfigurationForm: formReducer('obcConfiguration'),
   //
-  chaincode
+  chaincode,
+  app
 
 })
 
