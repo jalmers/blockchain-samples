@@ -1,6 +1,8 @@
 #Quick set-up
 
-Assumption : Hyperledger set up and built.
+Assumption : Hyperledger set up and built. 
+Download the cashMachine folder and save it in the go code path . For example: /Users/spnair/go/src/github.com/hyperledger/fabric/examples/chaincode/go
+
 ##Local Machine
 LOCALDEVDIR will be something similar to /Users/spnair/go/src/github.com/hyperledger/fabric/devenv
 Its not mandatory that this be set. 
@@ -14,7 +16,7 @@ There are two key folders you will need to use: the folder where the peer execut
 ```
 vi ~/.bashrc
 Towards the end of the file, add the following:
-#path to chaincode folder
+#path to chaincode folder - could vary based on the path where the code is saved
 CCPATH="$GOPATH/src/github.com/hyperledger/fabric/examples/chaincode/go"
 export CCPATH
 #path to peer
@@ -118,4 +120,4 @@ This returns all the transactions in descending order
 ./peer chaincode invoke -n cash -c '{"Function":"deleteCashMachine", "Args":["{\"assetID\":\"CM01\"}"]}'
 ```
 If you run the readCashMachine command for the same asset now, it will return an error
-__Error: Error querying chaincode: rpc error: code = 2 desc = "Error:Transaction or query returned with failure: Unable to get asset state from ledger"__
+_Error: Error querying chaincode: rpc error: code = 2 desc = "Error:Transaction or query returned with failure: Unable to get asset state from ledger"_
