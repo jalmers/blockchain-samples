@@ -295,7 +295,7 @@ export function fetchCcSchema(){
               "name":state.configuration.chaincodeId
           },
           "ctorMsg":{
-            "function":"readAssetSchemas",
+            "function":"readCashMachineSchemas",
             //we need to stringify the object because contract expects a string as args, not an object.
             "args": []
           },

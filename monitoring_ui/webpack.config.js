@@ -51,6 +51,7 @@ module.exports = {
     port: process.env.PORT || 8081
   },
   plugins:[
+    new webpack.IgnorePlugin(/^(buffertools)$/),
     new webpack.HotModuleReplacementPlugin()
   ]
 }
