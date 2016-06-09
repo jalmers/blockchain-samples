@@ -129,11 +129,10 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
     } else if function == "readCashMachineSamples" {
 		// returns selected sample objects 
 		return t.readCashMachineSamples(stub, args)
-	} 
-    /*else if function == "readCashMachineSchemas" {
+	} else if function == "readCashMachineSchemas" {
 		// returns selected sample objects 
 		return t.readCashMachineSchemas(stub, args)
-	}*/
+	}
     return nil, errors.New("Received unknown invocation: " + function)
 }
 
@@ -254,13 +253,13 @@ func (t *SimpleChaincode) readCashMachineHistory(stub *shim.ChaincodeStub, args 
 func (t *SimpleChaincode) readCashMachineSamples(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	return []byte(samples), nil
 }
-/*
+
 //*************readCashMachineSchemas*******************
 
 func (t *SimpleChaincode) readCashMachineSchemas(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
 	return []byte(schemas), nil
 }
-*/
+
 
 // ************************************
 // validate input data : common method called by the CRUD functions
