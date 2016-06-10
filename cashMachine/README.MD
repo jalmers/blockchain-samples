@@ -69,7 +69,7 @@ This returns the name of the chaincode - in this case, 'cash' In a DevNet enviro
 ####b. Read a sample to see what data should be sent in
 ```
 ./peer chaincode query -n cash -c '{"Function":"readCashMachineSamples", "Args":[]}'
-``
+```
 This returns:
 ```
 {
